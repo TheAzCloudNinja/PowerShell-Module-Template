@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<plasterManifest schemaVersion="1.0" 
+  xmlns="http://www.microsoft.com/schemas/PowerShell/Plaster/v1">
+  <metadata>
+    <name>FullModuleTemplate</name>
+    <id>1eecf13b-e3a8-476f-8de7-6104363576bd</id>
+    <version>0.1.0</version>
+    <title>Full Module Template</title>
+    <description></description>
+    <author>Eelco Labordus</author>
+    <tags></tags>
+  </metadata>
+  <parameters>
+    <parameter name="ModuleName" type="text" prompt="Name of your module"/>
+    <parameter name="ModuleDesc" type="text" prompt="Brief description on this module"/>
+    <parameter name="PowerShellFunctionName" type="text" prompt="Name for the first public script"/>
+    <parameter name="PowerShellFunctionDesc" type="text" prompt="Brief description for the first public script"/>
+    <parameter name="FullName" type="text" prompt="Module author's' name"/>
+    <parameter name="CompanyName" type="text" prompt="What is the company Name the module is writen for."/>
+    <parameter name="projectUrl" type="text" prompt="Project Url location"/>
+  </parameters>
+  <content>
+    <message>      Creating folder structure    </message>
+    <file source='' destination='.vscode'/>
+    <file source='' destination='${PLASTER_PARAM_ModuleName}\public'/>
+    <file source='' destination='${PLASTER_PARAM_ModuleName}\private'/>
+    <file source='' destination='${PLASTER_PARAM_ModuleName}\classes'/>
+    <file source='' destination='${PLASTER_PARAM_ModuleName}\data'/>
+    <message>      Deploying files    </message>
+    <file source='.gitignore' destination=''/>
+    <file source='azure-pipelines.yml' destination=''/>
+    <file source='Module.build.ps1' destination=''/>
+    <file source='Module.depend.psd1' destination=''/>
+    <file source='.vscode\launch.json' destination=''/>
+    <file source='.vscode\settings.json' destination=''/>
+    <file source='.vscode\PSScriptAnalyzerSettings.psd1' destination=''/>
+    <file source='module\module.psm1' destination='${PLASTER_PARAM_ModuleName}\${PLASTER_PARAM_ModuleName}.psm1'/>
+    <file source='module\module.psd1' destination='${PLASTER_PARAM_ModuleName}\${PLASTER_PARAM_ModuleName}.psd1'/>
+    <file source='module\module.PSSATests.ps1' destination='${PLASTER_PARAM_ModuleName}\${PLASTER_PARAM_ModuleName}.PSSATests.ps1'/>
+    <file source='module\module.Tests.ps1' destination='${PLASTER_PARAM_ModuleName}\${PLASTER_PARAM_ModuleName}.Tests.ps1'/>
+    <message>      Updating files    </message>
+    <templateFile source='readme.md' destination=''/>
+    <templateFile source='LICENSE' destination=''/>
+    <templateFile source='docs\about.md' destination=''/>
+    <templateFile source='docs\acknowledgements.md' destination=''/>
+    <templateFile source='docs\index.md' destination=''/>
+    <templateFile source='docs\Quick-Start-Installation-and-Example.md' destination=''/>
+    <templateFile source='module\public\PowerShellFunction.ps1' destination='${PLASTER_PARAM_ModuleName}\public\${PLASTER_PARAM_PowerShellFunctionName}.ps1'/>
+    <templateFile source='module\module.nuspec' destination='${PLASTER_PARAM_ModuleName}\${PLASTER_PARAM_ModuleName}.nuspec'/>
+    <templateFile source='module\module.psd1' destination='${PLASTER_PARAM_ModuleName}\${PLASTER_PARAM_ModuleName}.psd1'/>  
+  </content>
+</plasterManifest>

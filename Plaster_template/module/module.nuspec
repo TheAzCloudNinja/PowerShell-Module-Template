@@ -4,7 +4,7 @@
     <id><%= $PLASTER_PARAM_ModuleName %></id>
     <version>0.0.1</version>
     <authors><%= $PLASTER_PARAM_FullName %></authors>
-    <description><%= $PLASTER_PARAM_Description %></description>
+    <description><%= $PLASTER_PARAM_ModuleDesc %></description>
     <copyright>(c) <%= $PLASTER_PARAM_CompanyName %>. All rights reserved.</copyright>
     <licenseUrl><%= $PLASTER_PARAM_projectUrl %></licenseUrl>
     <projectUrl><%= $PLASTER_PARAM_projectUrl %></projectUrl>

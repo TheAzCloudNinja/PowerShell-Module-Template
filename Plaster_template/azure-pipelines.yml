@@ -13,6 +13,8 @@ pool:
 variables:
 - group: General-build-variable
 
+# abc
+# some changes
 stages:
   - stage: Test
     jobs:
@@ -81,6 +83,26 @@ stages:
             summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/CodeCoverageResults*.xml'
             pathToSources: '$(System.DefaultWorkingDirectory)/$(module.Name)/'
             failIfCoverageEmpty: true
+        
+        - task: PowerShell@2
+          displayName: "Checking if ARM files are present for testing."
+          inputs:
+            targetType: 'inline'
+            script: |
+              #Setting up variable for testing of AMR templates
+              $Count = 0
+              Get-ChildItem -Path $(System.DefaultWorkingDirectory) -Filter *.json -Recurse | ForEach-Object {
+                  $Count ++
+              }
+              Write-Output -InputObject "##vso[task.setvariable variable=ARMTemplates;]$Count"
+
+        - task: AzSKARMTemplateChecker@4
+          displayName:  'Checking ARM templates in the module.'
+          condition: ge(variables['ARMTemplates'], '0')
+          inputs:
+            ARMTemplateFilePath: '$(System.DefaultWorkingDirectory)/$(module.Name)/'
+            ARMTemplateParameterFilePath: '$(System.DefaultWorkingDirectory)/$(module.Name)/'
+        
 
   - stage: Build
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master')) # Create builds only from the master branch

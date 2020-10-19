@@ -27,7 +27,8 @@ function <%= $PLASTER_PARAM_PowerShellFunctionName %> {
 #region --------------------------[ Initialisations ]-----------------------
 
 #requires -Version 5.0
-[CmdletBinding()]
+[cmdletbinding()]
+param()
 
 #endregion -----------------------[ Initialisations ]-----------------------
 

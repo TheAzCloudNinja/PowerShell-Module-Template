@@ -126,6 +126,22 @@ stages:
               script: Invoke-Build -Task Build -Configuration Release -Sourcelocation $(module.SourceLocation) -ModuleName $(module.Name) -ADOPat $(System.AccessToken) -acceptableCodeCoveragePercent $(acceptableCodeCoveragePercent)
               workingDirectory: $(System.DefaultWorkingDirectory)
 
+          - task: PowerShell@2
+            displayName: Building Markdown Help Files
+            inputs:
+              targetType: "inline"
+              pwsh: true
+              failOnStderr: true
+              script: Invoke-Build -Task BuildingHelpFiles -ModuleName $(module.Name)
+              workingDirectory: $(System.DefaultWorkingDirectory)
+          
+          - task: PublishBuildArtifacts@1
+            displayName: Publish Markdown files
+            inputs:
+              PathtoPublish: 'D:\a\1\s\build\Help'
+              ArtifactName: 'help'
+              publishLocation: 'Container'
+
           - task: NuGetCommand@2
             displayName: Create a NuGet package
             inputs:

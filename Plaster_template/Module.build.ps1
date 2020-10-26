@@ -333,6 +333,8 @@ task CodeCoverage {
         $PSVersion = $PSVersionTable.PSVersion.Major
         $TestResultFile = "CodeCoverageResults_PS$PSVersion`_$TimeStamp.xml"
         $Params.Add("CodeCoverageOutputFile", "$buildOutputPath\$TestResultFile")
+
+        Write-Output -InputObject "CodeCoverageOutputFile root path is : $buildOutputPath\$TestResultFile"
     }
 
     $result = Invoke-Pester @Params
@@ -354,6 +356,107 @@ task CodeCoverage {
     # Fail the task if the code coverage results are not acceptable
     if ($actualCodeCoveragePercent -lt $acceptableCodeCoveragePercent) {
         throw "The overall code coverage by Pester tests is $actualCodeCoveragePercent% which is less than quality gate of $acceptableCodeCoveragePercent%. Pester ModuleVersion is: $((Get-Module -Name Pester -ListAvailable).Version)."
+    }
+}
+
+# Synopsis: Creating the help files for the module
+task BuildingHelpFiles {
+
+    $path = $moduleSourcePath
+    $Modules = get-childitem -path $path -recurse -Filter *.psd1 -Verbose
+
+    Write-Output -InputObject "Modules: $Modules"
+
+    foreach ($Module in $Modules) {
+
+        #Remove the module from OS
+        Write-Output -InputObject "Start processing the following module : $($Module.Name)"
+        Get-Module $Module.Name | Uninstall-Module -Force -ErrorAction SilentlyContinue
+
+        #Install module from repo
+        Import-Module -Name $Module.FullName -Verbose
+
+        #Retrieve version number of module
+        $TempModule = Get-Module -ListAvailable $Module.FullName
+
+        $ModuleVersion = $TempModule.Version.ToString()
+        write-output -InputObject "$($Module.Name) has version : $ModuleVersion"
+
+        #Construction file paths
+
+        if (-not (Test-Path -Path $buildOutputPath -ErrorAction SilentlyContinue)) {
+            New-Item -Path $buildOutputPath -ItemType Directory
+        }
+
+        $RootPath = "$buildOutputPath\Help"
+        If (!(test-path $RootPath)) {
+            New-Item -ItemType Directory -Force -Path $RootPath
+        }
+
+        $RootModulePath = "$RootPath\$($Module.BaseName)"
+        If (!(test-path $RootModulePath)) {
+            New-Item -ItemType Directory -Force -Path $RootModulePath
+        }
+
+        $Modulepath = "$RootModulePath\$ModuleVersion"
+        If (test-path $Modulepath) {
+            Remove-Item –path $Modulepath –recurse
+        }
+        New-Item -ItemType Directory -Force -Path $Modulepath
+
+        #Constructing new markdown files
+        $parameters = @{
+            Module                = $Module.BaseName
+            OutputFolder          = $Modulepath
+            AlphabeticParamsOrder = $true
+            WithModulePage        = $true
+            ExcludeDontShow       = $true
+            Force                 = $true
+        }
+        New-MarkdownHelp @parameters
+
+        #Creating index files for module
+        Copy-Item -Path "$Modulepath\$($Module.BaseName).md" -Destination "$Modulepath\index.md" -Force
+
+        #Create New version specific Markdown file
+
+        "---" |  Out-File -FilePath "$Modulepath\index.md" -Force
+        "name : $ModuleVersion" |  Out-File -FilePath "$Modulepath\index.md" -Append -Force
+        "order : 1000 # higher has more priority" |  Out-File -FilePath "$Modulepath\index.md" -Append -Force
+        "---" |  Out-File -FilePath "$Modulepath\index.md" -Append -Force
+        "" |  Out-File -FilePath "$Modulepath\index.md" -Append -Force
+        "#PowerShell Module $ModuleVersion home page" |  Out-File -FilePath "$Modulepath\index.md" -Append -Force
+
+        #Creating header for indexing services
+        $Files = Get-ChildItem -Path $Modulepath -File -Recurse
+        $Counter = 1
+
+        Write-Output -InputObject "Start processing the MD files to include header."
+        Foreach ($File in $Files) {
+            [System.Collections.ArrayList]$files = Get-Content -Path $File.FullName
+
+            ($files | Select-String -Pattern '----')
+            $index = ($files.IndexOf('----') + 2)
+
+            # Checking correct name, index is not correct
+            if ($($File.BaseName) -eq "index") {
+                $line1 = "Name : $($Module.Name)"
+            }
+            else {
+                $line1 = "Name : $($File.BaseName)"
+            }
+
+            #Added counter for ordering the files
+            $Order = $Counter * 100
+            $line2 = "Order : $Order"
+            $Counter ++
+
+            #Writing files
+            $insert = @($line1, $line2)
+            $files.Insert($index, $insert)
+            $files | Out-File $File.FullName
+
+        }
     }
 }
 
